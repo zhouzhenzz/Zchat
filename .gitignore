@@ -4,7 +4,12 @@ backend/.venv/
 backend/*.pyc
 backend/.env
 backend/build/
-
+backend/.env.production
+backend/.env.development
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 # --- 前端 (Node/React) ---
 frontend/node_modules/
 frontend/dist/
