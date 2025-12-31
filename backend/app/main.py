@@ -1,13 +1,37 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
 from app.api.api import api_router
+from app.db.session import engine
+from app.core.config import settings
+# 注意：这里从 app.models 导入 Base，此时 Base 已经关联了 User 等模型
+from app.models import Base 
+from app.models.chat import Message # 必须导入，Base 才会把它加入建表清单
 
-app = FastAPI(title="Zchat API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 启动时：自动建表
+    async with engine.begin() as conn:
+        if settings.DEBUG:
+            print("--- 正在检测并自动创建数据表 ---")
+            # 这里会扫描所有已导入 app.models 的模型并建表
+            await conn.run_sync(Base.metadata.create_all)
+            print("--- 数据表初始化完成 ---")
+    yield
+    # 关闭时：释放连接
+    await engine.dispose()
 
-# 配置跨域 - 企业级开发必备
+app = FastAPI(
+    title=settings.PROJECT_NAME, 
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# 配置跨域
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 生产环境应替换为具体域名
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -17,5 +41,5 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api")
 
 @app.get("/")
-def root():
-    return {"message": "Welcome to Zchat API"}
+async def root():
+    return {"message": "Welcome to Zchat API", "db_status": "connected"}

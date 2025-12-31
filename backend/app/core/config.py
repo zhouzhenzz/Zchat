@@ -1,22 +1,28 @@
 import os
-# 注意：是从 pydantic_settings 导入，而不是 pydantic
 from pydantic_settings import BaseSettings, SettingsConfigDict # type: ignore
 
-# 获取当前环境标识
+# 确保环境变量正确，或者直接硬编码为 ".env.development"
 env_type = os.getenv("APP_ENV", "development")
 env_file = f".env.{env_type}"
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str
-    DEBUG: bool
-    DATABASE_URL: str
-    SECRET_KEY: str
+    # --- 基础配置 ---
+    PROJECT_NAME: str = "Zchat-Dev"
+    DEBUG: bool = True
 
-    # Pydantic V2 的配置方式
+    # --- 数据库与 Redis ---
+    DATABASE_URL: str 
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    # --- 安全配置 ---
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7天
+
     model_config = SettingsConfigDict(
         env_file=env_file,
         env_file_encoding='utf-8',
-        extra='ignore'  # 允许 env 文件中有额外的变量而不报错
+        extra='ignore'
     )
 
 settings = Settings()
