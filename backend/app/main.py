@@ -1,13 +1,23 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI #type:ignore
+from fastapi.middleware.cors import CORSMiddleware #type:ignore
 from contextlib import asynccontextmanager
-
+from fastapi.staticfiles import StaticFiles #type:ignore
+import os
 from app.api.api import api_router
 from app.db.session import engine
 from app.core.config import settings
 # 注意：这里从 app.models 导入 Base，此时 Base 已经关联了 User 等模型
 from app.models import Base 
 from app.models.chat import Message # 必须导入，Base 才会把它加入建表清单
+from app.models.friendship import Friendship
+from app.models.moment import Moment
+
+
+UPLOAD_DIR = "uploads"
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,6 +49,8 @@ app.add_middleware(
 
 # 挂载路由
 app.include_router(api_router, prefix="/api")
+#挂载图片路径
+app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
 @app.get("/")
 async def root():
