@@ -11,6 +11,7 @@ from app.models import Base
 from app.models.chat import Message # 必须导入，Base 才会把它加入建表清单
 from app.models.friendship import Friendship
 from app.models.moment import Moment
+from app.models.user import User
 
 
 UPLOAD_DIR = "uploads"

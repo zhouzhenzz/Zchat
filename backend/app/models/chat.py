@@ -7,12 +7,13 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sender_id = Column(Integer, ForeignKey("users.id"), index=True)
-    receiver_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True) # 私聊
-    group_id = Column(Integer, index=True, nullable=True) # 群聊ID (后面可以加专门的Group表)
+    receiver_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    group_id = Column(Integer, index=True, nullable=True)
     
     content = Column(Text, nullable=False)
-    msg_type = Column(String, default="text") # text, image, file, voice
+    msg_type = Column(String, default="text")
     
-    # 撤回与删除逻辑
-    is_recalled = Column(Boolean, default=False)  # 撤回状态
+    # --- 新增/完善字段 ---
+    is_read = Column(Boolean, default=False, index=True) # 已读/未读状态
+    is_recalled = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())

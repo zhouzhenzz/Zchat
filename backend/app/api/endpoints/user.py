@@ -7,9 +7,10 @@ from typing import Any
 
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserOut, Token
+from app.schemas.user import UserCreate, UserOut, Token,UserUpdate
 from app.core.security import get_password_hash, create_access_token, verify_password
 from app.core.config import settings
+from sqlalchemy import select, update, and_, or_ #type:ignore
 
 router = APIRouter()
 
@@ -124,4 +125,41 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     """
     受保护接口：获取当前登录用户的详细资料
     """
+    return current_user
+
+@router.put("/me", response_model=UserOut)
+async def update_user_me(
+    user_in: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    修改个人信息：支持修改用户名、头像、简介和位置
+    """
+    # 1. 提取要修改的字段，排除未传的参数
+    update_data = user_in.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="请提供需要修改的内容")
+
+    # 2. 如果修改了用户名，需要检查唯一性
+    if "username" in update_data and update_data["username"] != current_user.username:
+        user_check = await db.execute(
+            select(User).where(User.username == update_data["username"])
+        )
+        if user_check.scalars().first():
+            raise HTTPException(status_code=400, detail="用户名已被占用")
+
+    # 3. 执行数据库更新
+    query = (
+        update(User)
+        .where(User.id == current_user.id)
+        .values(**update_data)
+    )
+    
+    await db.execute(query)
+    await db.commit()
+    
+    # 4. 刷新并返回最新对象
+    await db.refresh(current_user)
     return current_user
