@@ -47,6 +47,10 @@ export const router = createBrowserRouter([
     element: <PrivateRoute><MessagePage mode="profile" /></PrivateRoute>,
   },
   {
+    path: '/friends', // 新增路由
+    element: <PrivateRoute><MessagePage mode="friends" /></PrivateRoute>,
+  },
+  {
     path: '*',
     element: (
       <div className="h-screen flex items-center justify-center bg-[#f8f9fa] font-['Inter'] text-gray-900">

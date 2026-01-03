@@ -40,9 +40,13 @@ export default function SideRail() {
         >
           💬
         </Link>
-        <button className="text-gray-500 hover:text-white transition-colors cursor-pointer text-xl">
+        <Link 
+          to="/friends" 
+          className="text-white/50 hover:text-white transition-colors cursor-pointer text-center text-xl"
+          title="联系人"
+        >
           👥
-        </button>
+        </Link>
         <button className="text-gray-500 hover:text-white transition-colors cursor-pointer text-xl">
           ⚙️
         </button>
