@@ -1,30 +1,49 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SideRail from '@/components/layout/SideRail';
 import ContactList from '@/components/chat/ContactList';
 import ChatWindow from '@/components/chat/ChatWindow';
 import ProfileView from '@/components/profile/ProfileView';
-import FriendView from '@/components/friends/FriendView'; // 假设你已根据 HTML 实现此组件
+import FriendView from '@/components/friends/FriendView';
 import { useChatStore } from '@/store/useChatStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useFriendStore } from '@/store/useFriendStore'; // 1. 引入好友 Store
 
-/**
- * mode 定义说明：
- * - chat: 标准聊天模式（会话列表 + 聊天窗口）
- * - profile: 个人中心
- * - friends: 联系人管理（好友列表、申请、搜索）
- */
 export default function MessagePage({ mode = 'chat' }: { mode?: 'chat' | 'profile' | 'friends' }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const token = useAuthStore((s) => s.token);
-  const { initWebSocket, fetchSessions } = useChatStore();
+  
+  // 引入聊天相关方法
+  const { 
+    initWebSocket, 
+    fetchSessions, 
+    activePeerId, 
+    fetchHistory, 
+    markAsRead 
+  } = useChatStore();
 
-  // 只要 token 存在，就建立长连接并更新会话列表
+  // 2. 引入获取好友的方法
+  const { fetchFriends } = useFriendStore();
+
+  // 只要 token 存在，就执行基础数据初始化
   useEffect(() => {
     if (token) {
       initWebSocket(token);
-      fetchSessions(); 
+      fetchSessions(); // 加载最近会话
+      fetchFriends();  // 3. 核心完善：加载好友列表数据，确保 FriendView 有数据可显
     }
-  }, [token, initWebSocket, fetchSessions]);
+  }, [token]); 
+
+  /**
+   * 监听模式(mode)和活跃对象(activePeerId)的变化
+   * 确保从好友列表跳转回来时数据同步
+   */
+  useEffect(() => {
+    if (mode === 'chat' && activePeerId) {
+      fetchHistory(activePeerId);
+      markAsRead(activePeerId);
+      fetchSessions();
+    }
+  }, [mode, activePeerId]);
 
   // 辅助渲染主内容区
   const renderMainContent = () => {
@@ -41,8 +60,8 @@ export default function MessagePage({ mode = 'chat' }: { mode?: 'chat' | 'profil
 
   return (
     <div className="h-screen overflow-hidden flex bg-white text-gray-900 font-['Inter']">
-      {/* 1. 最左侧窄边导航栏 (SideRail) */}
-      <SideRail />
+      {/* 1. 最左侧窄边导航栏 */}
+      <SideRail currentMode={mode} />
 
       {/* 2. 中间/左侧会话列表侧边栏 (仅在聊天模式下显示) */}
       {mode === 'chat' && (

@@ -1,23 +1,58 @@
-import React from 'react';
+import { useEffect } from 'react'; //
 import { useFriendStore } from '@/store/useFriendStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '@/store/useChatStore';
 
 export default function ContactGrid() {
-  const { friends, removeFriend } = useFriendStore();
+  // 从 Store 获取数据和方法
+  const { friends, fetchFriends, removeFriend, loading } = useFriendStore();
   const { user: currentUser } = useAuthStore();
-  const { setActivePeer } = useChatStore();
+  
+  const { 
+    setActivePeer, 
+    fetchHistory, 
+    markAsRead, 
+    fetchSessions 
+  } = useChatStore();
+  
   const navigate = useNavigate();
 
-  const handleChat = (friendId: number) => {
-    setActivePeer(friendId);
+  // 1. 关键修复：组件挂载时从后端获取好友列表
+  useEffect(() => {
+    fetchFriends();
+  }, [fetchFriends]);
+
+  const handleChat = async (peerId: number) => {
+    setActivePeer(peerId);
+    
+    try {
+      // 执行跳转前的数据同步
+      await Promise.all([
+        fetchHistory(peerId),
+        markAsRead(peerId)
+      ]);
+      fetchSessions();
+    } catch (err) {
+      console.error("Failed to sync chat state:", err);
+    }
+
     navigate('/chat');
   };
 
+  // 2. 加载状态处理
+  if (loading && friends.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  // 3. 空状态展示
   if (friends.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-gray-300">
+      <div className="h-full flex flex-col items-center justify-center text-gray-300 py-20">
         <div className="text-4xl mb-4">📭</div>
         <p className="text-sm">暂无好友，去添加一个吧</p>
       </div>
@@ -27,10 +62,10 @@ export default function ContactGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       {friends.map((item) => {
-        // 计算对方ID (因为好友关系是双向的，记录里可能是 user_id 或 friend_id)
+        // 根据好友记录计算对方 ID
         const peerId = item.user_id === currentUser?.id ? item.friend_id : item.user_id;
         
-        // 注意：如果你后端没有返回 friend_info，这里只能显示 ID
+        // 使用后端返回的 friend_info 渲染，如果没有则降级显示 ID
         const displayName = item.friend_info?.username || `用户 ${peerId}`; 
         
         return (
@@ -41,7 +76,11 @@ export default function ContactGrid() {
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <button 
-                  onClick={() => removeFriend(peerId)}
+                  onClick={() => {
+                    if (window.confirm(`确定要删除好友 ${displayName} 吗？`)) {
+                      removeFriend(peerId); //
+                    }
+                  }}
                   className="text-gray-300 hover:text-red-400 p-1"
                   title="解除好友"
                 >

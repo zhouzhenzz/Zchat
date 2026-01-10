@@ -1,18 +1,18 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 
-export default function SideRail() {
+// 1. 定义组件接收的属性类型
+interface SideRailProps {
+  currentMode?: 'chat' | 'profile' | 'friends';
+}
+
+// 2. 在组件参数中接收 currentMode
+export default function SideRail({ currentMode = 'chat' }: SideRailProps) {
   const navigate = useNavigate();
-  // 从 Store 获取当前用户信息和退出方法
   const { user, logout } = useAuthStore();
 
-  // 获取环境变量中的后端基址
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-  /**
-   * 拼接完整图片地址
-   * 逻辑与 ProfileView 和 ContactList 保持一致
-   */
   const getFullUrl = (path: string | undefined) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
@@ -33,31 +33,38 @@ export default function SideRail() {
 
       {/* 中间导航菜单 */}
       <nav className="flex flex-col space-y-8 flex-1">
+        {/* 聊天图标：根据 currentMode 判断是否高亮 */}
         <Link 
           to="/chat" 
-          className="text-white hover:opacity-80 transition-opacity cursor-pointer text-center text-xl"
+          className={`transition-all text-center text-xl ${
+            currentMode === 'chat' ? 'text-white scale-110' : 'text-white/30 hover:text-white/60'
+          }`}
           title="聊天"
         >
           💬
         </Link>
+        
+        {/* 联系人图标：根据 currentMode 判断是否高亮 */}
         <Link 
           to="/friends" 
-          className="text-white/50 hover:text-white transition-colors cursor-pointer text-center text-xl"
+          className={`transition-all text-center text-xl ${
+            currentMode === 'friends' ? 'text-white scale-110' : 'text-white/30 hover:text-white/60'
+          }`}
           title="联系人"
         >
           👥
         </Link>
-        <button className="text-gray-500 hover:text-white transition-colors cursor-pointer text-xl">
+        
+        <button className="text-white/30 hover:text-white/60 transition-colors cursor-pointer text-xl">
           ⚙️
         </button>
       </nav>
 
       {/* 底部操作区 */}
       <div className="flex flex-col space-y-6 items-center">
-        {/* 退出登录按钮 */}
         <button 
           onClick={handleLogout}
-          className="text-gray-500 hover:text-red-400 transition-colors cursor-pointer p-2"
+          className="text-white/30 hover:text-red-400 transition-colors cursor-pointer p-2"
           title="退出登录"
         >
           <svg 
@@ -77,10 +84,12 @@ export default function SideRail() {
           </svg>
         </button>
 
-        {/* 个人头像：点击跳转至个人页 */}
+        {/* 个人头像：如果是 profile 模式，加一个白色边框高亮 */}
         <Link 
           to="/profile"
-          className="w-10 h-10 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 overflow-hidden border border-white/10 cursor-pointer flex items-center justify-center"
+          className={`w-10 h-10 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 overflow-hidden border cursor-pointer flex items-center justify-center transition-all ${
+            currentMode === 'profile' ? 'border-white scale-110' : 'border-white/10 opacity-70 hover:opacity-100'
+          }`}
           title={user?.username || '个人中心'}
         >
           {user?.avatar_url ? (
