@@ -5,7 +5,7 @@ import type { User } from '@/types/user'; // 使用仅类型导入
 interface AuthState {
   token: string | null;
   user: User | null; // 这里使用你定义的 User 类型，而不是 {name, id}
-  setAuth: (token: string, user: User | null) => void;
+  setAuth: (token: string | null, user: User | null) => void;
   logout: () => void;
 }
 

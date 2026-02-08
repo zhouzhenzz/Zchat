@@ -1,25 +1,17 @@
 import request from './request';
 
-// 定义后端返回的 UploadResponse 结构
-export interface UploadResponse {
-  status: string;
-  url: string;
-  filename: string;
-  mimetype: string;
-  size: string;
-}
-
 /**
- * 上传文件接口
- * 对应 http://127.0.0.1:8000/api/media/upload
+ * 上传图片
  */
-export const uploadFileApi = (file: File) => {
+export const uploadImageApi = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
-  
-  return request.post<UploadResponse>('/api/media/upload', formData, {
+
+  const response = await request.post('/api/media/upload', formData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }) as Promise<UploadResponse>;
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+
+  return response.url;
 };

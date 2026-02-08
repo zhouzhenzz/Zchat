@@ -4,6 +4,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import MessagePage from '@/pages/Message';
 import LoginPage from '@/pages/Auth/Login';
 import RegisterPage from '@/pages/Auth/Register';
+import MomentsPage from '@/pages/Moments';
+import TimelinePage from '@/pages/Profile/Timeline';
 
 /**
  * 私有路由守卫：未登录（没 Token）时，强制踢回登录页
@@ -49,6 +51,14 @@ export const router = createBrowserRouter([
   {
     path: '/friends', // 新增路由
     element: <PrivateRoute><MessagePage mode="friends" /></PrivateRoute>,
+  },
+  {
+    path: '/moments', // 朋友圈路由
+    element: <PrivateRoute><MomentsPage /></PrivateRoute>,
+  },
+  {
+    path: '/timeline', // 个人时光轴路由
+    element: <PrivateRoute><TimelinePage /></PrivateRoute>,
   },
   {
     path: '*',

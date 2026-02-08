@@ -1,8 +1,10 @@
-import { useEffect } from 'react'; //
+import { useEffect } from 'react';
 import { useFriendStore } from '@/store/useFriendStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '@/store/useChatStore';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 export default function ContactGrid() {
   // 从 Store 获取数据和方法
@@ -71,8 +73,18 @@ export default function ContactGrid() {
         return (
           <div key={item.id} className="group p-5 border border-gray-100 rounded-2xl bg-white hover:border-gray-200 hover:shadow-lg hover:shadow-gray-100/50 transition-all duration-300">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-full bg-linear-to-tr from-gray-100 to-gray-200 flex items-center justify-center text-lg font-bold text-gray-400">
-                 {displayName.charAt(0).toUpperCase()}
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100">
+                {item.friend_info?.avatar_url ? (
+                  <img 
+                    src={item.friend_info.avatar_url.startsWith('http') ? item.friend_info.avatar_url : `${API_BASE_URL}${item.friend_info.avatar_url}`} 
+                    alt={displayName} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-tr from-gray-100 to-gray-200 flex items-center justify-center text-lg font-bold text-gray-400">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <button 

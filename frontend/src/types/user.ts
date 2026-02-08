@@ -8,6 +8,8 @@ export interface User {
   location?: string;
   is_active: boolean;
   created_at: string;
+  friends_count?: number;
+  followers_count?: number;
 }
 
 // 对应后端的 Token 模型

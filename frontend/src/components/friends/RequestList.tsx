@@ -1,6 +1,8 @@
 import React from 'react';
 import { useFriendStore } from '@/store/useFriendStore';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 export default function RequestList() {
   const { pendingRequests, acceptRequest, removeFriend } = useFriendStore();
 
@@ -17,11 +19,21 @@ export default function RequestList() {
       {pendingRequests.map((req) => (
         <div key={req.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
-              ?
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100">
+              {req.friend_info?.avatar_url ? (
+                <img 
+                  src={req.friend_info.avatar_url.startsWith('http') ? req.friend_info.avatar_url : `${API_BASE_URL}${req.friend_info.avatar_url}`} 
+                  alt={req.friend_info.username || `用户 ${req.user_id}`} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-black text-white flex items-center justify-center text-xs font-bold">
+                  {req.friend_info?.username?.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">用户 ID: {req.user_id}</h4>
+              <h4 className="font-bold text-gray-900 text-sm">{req.friend_info?.username || `用户 ID: ${req.user_id}`}</h4>
               <p className="text-xs text-gray-500 mt-0.5">请求添加你为好友</p>
               <p className="text-[10px] text-gray-400 mt-1">{new Date(req.created_at).toLocaleDateString()}</p>
             </div>

@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 // 1. 定义组件接收的属性类型
 interface SideRailProps {
-  currentMode?: 'chat' | 'profile' | 'friends';
+  currentMode?: 'chat' | 'profile' | 'friends' | 'moments' | 'timeline';
 }
 
 // 2. 在组件参数中接收 currentMode
@@ -53,6 +53,17 @@ export default function SideRail({ currentMode = 'chat' }: SideRailProps) {
           title="联系人"
         >
           👥
+        </Link>
+        
+        {/* 朋友圈图标：根据 currentMode 判断是否高亮 */}
+        <Link 
+          to="/moments" 
+          className={`transition-all text-center text-xl ${
+            currentMode === 'moments' ? 'text-white scale-110' : 'text-white/30 hover:text-white/60'
+          }`}
+          title="朋友圈"
+        >
+          📷
         </Link>
         
         <button className="text-white/30 hover:text-white/60 transition-colors cursor-pointer text-xl">
