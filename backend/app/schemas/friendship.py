@@ -21,7 +21,7 @@ class FriendshipOut(BaseModel):
 class FriendUserInfo(BaseModel):
     id: int
     username: str
-    # 可以根据需要添加 avatar 等字段
+    avatar_url: Optional[str] = None
 
 class FriendshipDetailOut(FriendshipOut):
     friend_info: Optional[FriendUserInfo] = None

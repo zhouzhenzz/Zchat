@@ -152,13 +152,17 @@ async def toggle_like(
     }
 
 # --- 5. 评论 ---
+class CommentCreate(BaseModel):
+    content: str
+
 @router.post("/{moment_id}/comment")
 async def add_comment(
     moment_id: int,
-    content: str,
+    data: CommentCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    content = data.content
     new_comment = {
         "cid": str(uuid.uuid4())[:8],
         "user_id": current_user.id,
