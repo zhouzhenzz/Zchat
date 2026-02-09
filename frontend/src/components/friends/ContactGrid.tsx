@@ -86,7 +86,7 @@ export default function ContactGrid() {
                   </div>
                 )}
               </div>
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity">
                 <button 
                   onClick={() => {
                     if (window.confirm(`确定要删除好友 ${displayName} 吗？`)) {
@@ -102,7 +102,7 @@ export default function ContactGrid() {
             </div>
             
             <h3 className="font-bold text-gray-900 mb-1">{displayName}</h3>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-6">Online</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-6"></p>
             
             <button 
               onClick={() => handleChat(peerId)}

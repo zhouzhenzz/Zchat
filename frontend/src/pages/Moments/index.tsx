@@ -53,12 +53,12 @@ export default function MomentsPage() {
   };
 
   return (
-    <div className="h-screen overflow-hidden flex bg-white text-gray-900 font-['Inter']">
+    <div className="h-screen overflow-hidden flex flex-col md:flex-row bg-white text-gray-900 font-['Inter']">
       {/* 1. 最左侧窄边导航栏 */}
       <SideRail currentMode="moments" />
 
       {/* 2. 右侧主内容区 */}
-      <main className="flex-1 flex flex-col bg-white h-full relative overflow-hidden">
+      <main className="flex-1 flex flex-col bg-white h-full relative overflow-hidden md:pt-0 pt-16 md:pb-0 pb-16">
         <div 
           className="flex-1 overflow-y-auto" 
           ref={containerRef}
@@ -78,7 +78,7 @@ export default function MomentsPage() {
             {/* 顶部导航 */}
             <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100 px-8 py-5">
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold text-black">Moments</h1>
+                <h1 className="text-xl font-bold text-black">动态</h1>
                 <button
                   onClick={handlePostClick}
                   className="bg-black text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-gray-800 transition-colors flex items-center"
@@ -86,43 +86,42 @@ export default function MomentsPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                   </svg>
-                  Post
+                  发布
                 </button>
               </div>
             </header>
           </div>
 
           {/* 用户信息和统计 */}
-          <div className="px-8 -mt-28">
-            <div className="flex space-x-6 items-center mb-10">
+          <div className="px-4 sm:px-8 -mt-24 sm:-mt-28">
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 items-center sm:mb-10">
               {/* 头像 */}
               <Link to="/timeline" className="cursor-pointer relative z-20">
                 {user?.avatar_url ? (
                   <img 
                     src={getFullImageUrl(user.avatar_url)}
                     alt={user.username}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                    className="w-20 sm:w-24 h-20 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-3xl border-4 border-white shadow-lg">
+                  <div className="w-20 sm:w-24 h-20 sm:h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-2xl sm:text-3xl border-4 border-white shadow-lg">
                     {user?.username?.charAt(0).toUpperCase() || '?'}
                   </div>
                 )}
               </Link>
               
               {/* 用户信息 */}
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-black mb-2">{user?.username}</h2>
+              <div className="flex-1 text-center sm:text-left">
+                <h2 className="text-lg sm:text-xl font-bold text-black mb-2">{user?.username}</h2>
                 <p className="text-gray-500 mb-4">{user?.bio || 'No bio yet'}</p>
               </div>
               
-
             </div>
           </div>
 
           {/* 动态列表 */}
-          <div className="px-8 py-6">
-            <h3 className="text-lg font-bold text-black mb-6">Recent Moments</h3>
+          <div className="px-4 sm:px-8 py-6">
+            <h3 className="text-lg font-bold text-black mb-6">最近动态</h3>
             
             {loading && moments.length === 0 ? (
               <div className="flex items-center justify-center py-20">

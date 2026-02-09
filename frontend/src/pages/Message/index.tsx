@@ -74,7 +74,7 @@ export default function MessagePage({ mode = 'chat' }: { mode?: 'chat' | 'profil
       )}
 
       {/* 3. 右侧主内容区 */}
-      <main className="flex-1 flex flex-col bg-white h-full relative overflow-hidden">
+      <main className="flex-1 flex flex-col bg-white h-full relative overflow-hidden md:pt-0 pt-16 md:pb-0 pb-16">
         {renderMainContent()}
       </main>
 

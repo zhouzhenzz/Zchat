@@ -14,8 +14,9 @@ interface ChatState {
   retryCount: number;
   setActivePeer: (peerId: number | null) => void;
   initWebSocket: (token: string) => void;
-  sendMessage: (receiverId: number, content: string, msgType?: string) => void;
+  sendMessage: (receiverId: number, content: string, msgType?: string) => Promise<boolean>;
   fetchSessions: () => Promise<void>;
+  sendMessageViaHttp: (receiverId: number, content: string, msgType?: string) => Promise<boolean>;
   fetchHistory: (peerId: number) => Promise<void>;
   markAsRead: (peerId: number) => void;
   reset: () => void;
@@ -63,7 +64,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   initWebSocket: (token) => {
-    if (get().socket?.readyState === WebSocket.OPEN) return;
+    const currentSocket = get().socket;
+    // 检查是否已经存在有效的连接
+    if (currentSocket?.readyState === WebSocket.OPEN) return;
+    
+    // 关闭可能存在的其他连接
+    if (currentSocket) {
+      currentSocket.close();
+    }
+    
     const ws = new WebSocket(`${WS_BASE_URL}/api/chat/ws/${token}`);
 
     ws.onmessage = (event) => {
@@ -72,40 +81,122 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const msg = payload.data || payload;
         if (msg.sender_id) {
           const { activePeerId, messages } = get();
-          // 如果是当前正在对话的用户，推入消息流
-          if (msg.sender_id === activePeerId || msg.receiver_id === activePeerId) {
-            set({ messages: [...messages, msg] });
+          // 检查消息是否已经存在
+          const messageExists = messages.some(m => m.id === msg.id);
+          if (!messageExists) {
+            // 如果是当前正在对话的用户，推入消息流
+            if (msg.sender_id === activePeerId || msg.receiver_id === activePeerId) {
+              set({ messages: [...messages, msg] });
+            }
+            // 只要有新消息，就刷新侧边栏（更新最后一条消息内容和未读数）
+            get().fetchSessions().catch(err => console.error('刷新会话失败:', err));
           }
-          // 只要有新消息，就刷新侧边栏（更新最后一条消息内容和未读数）
-          get().fetchSessions();
         }
-      } catch (e) { console.error("WS解析失败", e); }
+      } catch (e) {
+        console.error("WS解析失败", e);
+      }
     };
     
-    ws.onopen = () => set({ socket: ws, retryCount: 0 });
+    ws.onopen = () => {
+      console.log('WebSocket连接已打开');
+      set({ socket: ws, retryCount: 0 });
+    };
+    
     ws.onclose = () => {
-        set({ socket: null });
+      console.log('WebSocket连接已关闭');
+      set({ socket: null });
+      
+      const currentRetryCount = get().retryCount;
+      // 限制重连次数
+      if (currentRetryCount < 5) {
         setTimeout(() => {
-            const currentToken = useAuthStore.getState().token;
-            if (currentToken) get().initWebSocket(currentToken);
+          const currentToken = useAuthStore.getState().token;
+          if (currentToken) {
+            set({ retryCount: currentRetryCount + 1 });
+            get().initWebSocket(currentToken);
+          }
         }, 3000);
+      }
+    };
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket错误:', error);
     };
   },
 
-  sendMessage: (receiverId, content, msgType = "text") => {
+  sendMessage: async (receiverId, content, msgType = "text") => {
     const ws = get().socket;
+    const token = useAuthStore.getState().token;
+    
     if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ receiver_id: receiverId, content, msg_type: msgType }));
+      try {
+        const messageData = {
+          receiver_id: receiverId,
+          content,
+          msg_type: msgType
+        };
+        ws.send(JSON.stringify(messageData));
+        return true;
+      } catch (error) {
+        console.error('WebSocket发送消息失败:', error);
+        // 降级到HTTP请求
+        if (token) {
+          return get().sendMessageViaHttp(receiverId, content, msgType);
+        }
+        return false;
+      }
+    } else {
+      // WebSocket不可用时，使用HTTP请求
+      if (token) {
+        return get().sendMessageViaHttp(receiverId, content, msgType);
+      }
+      return false;
+    }
+  },
+  
+  // 添加HTTP发送消息的方法作为降级方案
+  sendMessageViaHttp: async (receiverId, content, msgType = "text") => {
+    try {
+      const token = useAuthStore.getState().token;
+      if (!token) return false;
+      
+      const response = await axios.post(`${API_BASE_URL}/api/chat/send`, {
+        receiver_id: receiverId,
+        content,
+        msg_type: msgType
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // 手动添加消息到本地
+      const newMessage = response.data;
+      const { messages, activePeerId } = get();
+      if (newMessage.sender_id === activePeerId || newMessage.receiver_id === activePeerId) {
+        set({ messages: [...messages, newMessage] });
+      }
+      // 刷新会话列表
+      get().fetchSessions().catch(err => console.error('刷新会话失败:', err));
+      return true;
+    } catch (error) {
+      console.error('HTTP发送消息失败:', error);
+      return false;
     }
   },
 
   fetchSessions: async () => {
     const token = useAuthStore.getState().token;
     if (!token) return;
-    const res = await axios.get(`${API_BASE_URL}/api/chat/sessions`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    set({ sessions: res.data });
+    
+    set({ loading: true });
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/chat/sessions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      set({ sessions: res.data, loading: false });
+    } catch (error) {
+      console.error('获取会话列表失败:', error);
+      set({ loading: false });
+    }
   },
 
   fetchHistory: async (peerId: number) => {
@@ -122,8 +213,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   markAsRead: async (peerId: number) => {
     const token = useAuthStore.getState().token;
-    await axios.post(`${API_BASE_URL}/api/chat/read/${peerId}`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    if (!token) return;
+    
+    try {
+      await axios.post(`${API_BASE_URL}/api/chat/read/${peerId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
   }
 }));

@@ -35,7 +35,7 @@ export default function FriendView() {
       {/* Header & Tabs */}
       <div className="px-8 py-6 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Contacts</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">联系人</h1>
           <p className="text-gray-400 text-[11px] mt-1 uppercase tracking-wider font-medium">管理你的社交圈</p>
         </div>
         

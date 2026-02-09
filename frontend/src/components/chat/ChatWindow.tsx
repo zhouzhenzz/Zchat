@@ -59,9 +59,7 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
           </div>
           <div>
             <h3 className="font-semibold text-sm text-gray-900">{activePeer?.username}</h3>
-            <p className="text-[10px] text-green-500 flex items-center mt-0.5">
-              <span className="w-1 h-1 bg-green-500 rounded-full mr-1 animate-pulse"></span> 正在线上
-            </p>
+            
           </div>
         </div>
       </header>
@@ -100,7 +98,22 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
                   {msg.is_recalled ? (
                     <span className="italic opacity-50 text-xs">此消息已撤回</span>
                   ) : (
-                    <span className="leading-relaxed">{msg.content}</span>
+                    <>
+                      {/* 根据消息类型渲染内容 */}
+                      {msg.content && (
+                        msg.msg_type === 'image' || (msg.content.startsWith('http') && (msg.content.endsWith('.jpg') || msg.content.endsWith('.jpeg') || msg.content.endsWith('.png') || msg.content.endsWith('.gif') || msg.content.endsWith('.webp'))) ? (
+                          <div className="w-full">
+                            <img 
+                              src={msg.content} 
+                              alt="Image" 
+                              className="w-full h-auto rounded-lg object-cover max-h-64"
+                            />
+                          </div>
+                        ) : (
+                          <span className="leading-relaxed">{msg.content}</span>
+                        )
+                      )}
+                    </>
                   )}
                   <div className={`text-[8px] mt-1.5 font-medium opacity-40 uppercase ${isMe ? 'text-right' : 'text-left'}`}>
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}

@@ -63,20 +63,14 @@ export default function ContactList({ onClose }: ContactListProps) {
       {/* 头部：标题与搜索 */}
       <div className="p-6 border-b border-gray-50">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold tracking-tight text-gray-900">Messages</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-gray-900">消息</h2>
           <button className="md:hidden text-gray-400 hover:text-black transition-colors" onClick={onClose}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <div className="relative">
-          <input 
-            type="text" 
-            placeholder="搜索对话..." 
-            className="w-full bg-gray-50 border-none rounded-xl py-2.5 px-4 text-sm focus:ring-1 focus:ring-gray-200 outline-none transition-all"
-          />
-        </div>
+        
       </div>
 
       {/* 列表区域 */}

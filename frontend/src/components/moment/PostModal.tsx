@@ -67,9 +67,9 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="bg-white w-full max-w-xl rounded-[3.5rem] shadow-2xl relative z-10 overflow-hidden animate-in fade-in zoom-in duration-500 flex flex-col">
+      <div className="bg-white w-full max-w-xl sm:rounded-[3.5rem] rounded-2xl shadow-2xl relative z-10 overflow-hidden animate-in fade-in zoom-in duration-500 flex flex-col">
         {/* 可滚动内容区域 */}
-        <div className="flex-1 overflow-y-auto p-12">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-12">
           <div className="flex justify-between items-center mb-10">
             <h3 className="text-xl font-black italic tracking-tighter">New Moment</h3>
             <button 

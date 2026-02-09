@@ -108,16 +108,44 @@ export default function ProfileView() {
   };
 
   return (
-    <div className="min-h-full w-full bg-[#fafafa] flex items-center justify-center p-6 font-['Inter'] relative">
+    <div className="min-h-full w-full bg-[#fafafa] flex items-center justify-center p-6 font-['Inter'] relative md:pt-0 pt-16 md:pb-0 pb-16">
       <div className="w-full max-w-2xl bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
         
         {/* 顶部饰条 */}
         <div className="h-32 bg-gray-50 flex items-end px-12 relative">
-          <Link to="/chat" className="absolute top-8 left-8 w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-black transition-colors shadow-sm">
+          {/* 桌面端：返回按钮 */}
+          <Link to="/chat" className="hidden md:flex absolute top-8 left-8 w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-black transition-colors shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </Link>
+          
+          {/* 退出按钮：放置在右下侧 */}
+          <button 
+            onClick={() => {
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('user');
+              setAuth(null, null);
+            }}
+            className="absolute bottom-4 right-8 text-red-500 hover:text-red-600 transition-colors cursor-pointer p-3"
+            title="退出登录"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
         </div>
 
         <div className="px-12 pb-16">
@@ -155,7 +183,7 @@ export default function ProfileView() {
             {/* 用户名与位置 */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex-1">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">Display Name</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">用户名</label>
                 <input 
                   type="text" 
                   value={formData.username}
@@ -164,7 +192,7 @@ export default function ProfileView() {
                 />
               </div>
               <div className="w-full md:w-48">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">Location</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">位置</label>
                 <input 
                   type="text" 
                   value={formData.location}
@@ -176,7 +204,7 @@ export default function ProfileView() {
 
             {/* 简介 */}
             <div className="border-b border-gray-50 pb-8">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-3">Bio / Signature</label>
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-3">简介</label>
               <textarea 
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
@@ -188,11 +216,11 @@ export default function ProfileView() {
             {/* 只读展示信息 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
               <div>
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">Email Address</label>
-                <p className="text-sm font-medium text-gray-400">{user?.email} (不可修改)</p>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">邮箱</label>
+                <p className="text-sm font-medium text-gray-400">{user?.email}</p>
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">Account ID</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 block mb-1">用户 ID</label>
                 <p className="text-sm font-mono text-gray-400">#MNML-{user?.id}</p>
               </div>
             </div>

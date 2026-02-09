@@ -105,14 +105,14 @@ export default function TimelinePage() {
   };
 
   return (
-    <div className="h-screen overflow-hidden flex bg-white text-gray-900 font-['Inter']">
+    <div className="h-screen overflow-hidden flex flex-col md:flex-row bg-white text-gray-900 font-['Inter']">
       {/* 1. 最左侧窄边导航栏 */}
       <SideRail currentMode="timeline" />
 
       {/* 2. 右侧主内容区 */}
-      <main className="flex-1 flex flex-col bg-white h-full relative overflow-hidden">
+      <main className="flex-1 flex flex-col bg-white h-full relative overflow-hidden md:pt-0 pt-16 md:pb-0 pb-16">
         <div className="flex-1 overflow-y-auto">
-          {/* 顶部背景 */}
+          {/* 顶部背景和用户信息 */}
           <div className="h-48 bg-gray-50 relative">
             {/* 背景图片 */}
             {coverImage && (
@@ -126,7 +126,7 @@ export default function TimelinePage() {
             {/* 顶部导航 */}
             <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100 px-8 py-5">
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold text-black">My Timeline</h1>
+                <h1 className="text-xl font-bold text-black">时间线</h1>
                 <button
                   onClick={handlePostClick}
                   className="bg-black text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-gray-800 transition-colors flex items-center"
@@ -134,26 +134,25 @@ export default function TimelinePage() {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                   </svg>
-                  Post
+                  发布
                 </button>
               </div>
             </header>
           </div>
 
           {/* 用户信息 */}
-          <div className="px-8 -mt-28">
-            <div className="flex space-x-6 items-center mb-10">
-              {/* 头像 */}
+          <div className="px-4 sm:px-8 -mt-24 sm:-mt-28">{/* 用户信息 */}
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 items-center sm:mb-10">              {/* 头像 */}
               <div className="relative">
                 <Link to="/timeline" className="cursor-pointer z-20">
                   {user?.avatar_url ? (
                     <img 
                       src={getFullImageUrl(user.avatar_url)}
                       alt={user.username} 
-                      className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                      className="w-20 sm:w-24 h-20 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-3xl border-4 border-white shadow-lg">
+                    <div className="w-20 sm:w-24 h-20 sm:h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-2xl sm:text-3xl border-4 border-white shadow-lg">
                       {user?.username?.charAt(0).toUpperCase() || '?'}
                     </div>
                   )}
@@ -180,30 +179,17 @@ export default function TimelinePage() {
                 onChange={handleFileChange}
               />
               
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-black mb-2">{user?.username}</h2>
+              <div className="flex-1 text-center sm:text-left">
+                <h2 className="text-lg sm:text-xl font-bold text-black mb-2">{user?.username}</h2>
                 <p className="text-gray-500 mb-4">{user?.bio || 'No bio yet'}</p>
-                <div className="flex space-x-4">
-                  <button className="flex items-center text-sm font-bold text-gray-600 hover:text-black transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    Edit Profile
-                  </button>
-                  <button className="flex items-center text-sm font-bold text-gray-600 hover:text-black transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    Settings
-                  </button>
-                </div>
+                
               </div>
             </div>
 
 
 
             {/* 个人动态 */}
-            <div className="border-t border-gray-100 pt-6">
+            <div className="border-t border-gray-100 pt-6 px-4 sm:px-8">
               <h3 className="text-lg font-bold text-black mb-6">My Moments</h3>
               
               {loading ? (
