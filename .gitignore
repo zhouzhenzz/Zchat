@@ -8,6 +8,7 @@ backend/.venv/
 backend/*.pyc
 backend/.env
 backend/build/
+backend/uploads/
 backend/.env.production
 <<<<<<< HEAD
 =======

@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { useNavigate, Link } from 'react-router-dom';
-=======
-import { useNavigate } from 'react-router-dom';
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
 import { loginApi, getMeApi } from '@/api/user';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -68,15 +64,12 @@ export default function LoginPage() {
           >
             {loading ? '正在同步资料...' : '进入系统'}
           </button>
-<<<<<<< HEAD
           <div className="text-center mt-4">
             <span className="text-gray-600">还没有账号？</span>
             <Link to="/register" className="text-black font-medium ml-2 hover:underline">
               立即注册
             </Link>
           </div>
-=======
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
         </div>
       </form>
     </div>

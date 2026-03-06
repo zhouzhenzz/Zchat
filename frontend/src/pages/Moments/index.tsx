@@ -133,22 +133,13 @@ export default function MomentsPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-200 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
-<<<<<<< HEAD
                 <h3 className="text-lg font-bold text-black mb-2">暂时没有动态</h3>
                 <p className="text-gray-400 mb-6 max-w-md">成为第一个分享你的动态，与好友互动吧！</p>
-=======
-                <h3 className="text-lg font-bold text-black mb-2">No moments yet</h3>
-                <p className="text-gray-400 mb-6 max-w-md">Be the first to share your thoughts and moments with your friends!</p>
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
                 <button
                   onClick={handlePostClick}
                   className="bg-black text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-gray-800 transition-colors"
                 >
-<<<<<<< HEAD
                   分享你的第一个动态
-=======
-                  Share Your First Moment
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
                 </button>
               </div>
             ) : (

@@ -1,9 +1,5 @@
 import React from 'react';
-<<<<<<< HEAD
 import { useNavigate, Link } from 'react-router-dom';
-=======
-import { useNavigate } from 'react-router-dom';
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
 import { registerApi } from '@/api/user';
 
 export default function RegisterPage() {
@@ -32,15 +28,12 @@ export default function RegisterPage() {
           <input name="email" type="email" placeholder="电子邮箱" required className="w-full p-4 bg-gray-50 rounded-2xl outline-none" />
           <input name="password" type="password" placeholder="密码 (至少6位)" minLength={6} required className="w-full p-4 bg-gray-50 rounded-2xl outline-none" />
           <button className="w-full bg-black text-white p-4 rounded-2xl font-bold hover:bg-gray-800">注 册</button>
-<<<<<<< HEAD
           <div className="text-center mt-4">
             <span className="text-gray-600">已有账号？</span>
             <Link to="/login" className="text-black font-medium ml-2 hover:underline">
               立即登录
             </Link>
           </div>
-=======
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
         </div>
       </form>
     </div>
