@@ -1,0 +1,28 @@
+/* src/index.css */
+@import "tailwindcss";
+
+:root {
+  /* 确保字体和基础颜色正常 */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* 关键：强制让 root 和 body 撑满全屏，且不溢出 */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* 防止出现双滚动条 */
+}
+
+/* 自定义滚动条 (保持之前的精致感) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}

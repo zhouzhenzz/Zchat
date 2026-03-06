@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: zchat_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=zchat
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    container_name: zchat_backend
+    volumes:
+      - ./backend:/code  # 关键：将本地代码挂载到容器，实现热更新
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/zchat
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db  # 确保数据库先启动
+
+volumes:
+  postgres_data:
