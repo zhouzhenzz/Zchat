@@ -71,7 +71,11 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
         {/* 可滚动内容区域 */}
         <div className="flex-1 overflow-y-auto p-6 sm:p-12">
           <div className="flex justify-between items-center mb-10">
+<<<<<<< HEAD
             <h3 className="text-xl font-black italic tracking-tighter">新动态</h3>
+=======
+            <h3 className="text-xl font-black italic tracking-tighter">New Moment</h3>
+>>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
             <button 
               onClick={onClose}
               className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-black transition-colors"
@@ -108,7 +112,11 @@ export default function PostModal({ isOpen, onClose }: PostModalProps) {
                 (posting || uploading) ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
+<<<<<<< HEAD
               {posting ? '发布中...' : '发布'}
+=======
+              {posting ? '发布中...' : 'Publish'}
+>>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
             </button>
           </div>
 

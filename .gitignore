@@ -1,10 +1,18 @@
 # --- 后端 (Python/FastAPI) ---
 backend/__pycache__/
+<<<<<<< HEAD
 backend/venv/
+=======
+backend/.venv/
+>>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
 backend/*.pyc
 backend/.env
 backend/build/
 backend/.env.production
+<<<<<<< HEAD
+=======
+backend/.env.development
+>>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
 __pycache__/
 *.pyc
 *.pyo
