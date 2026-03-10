@@ -1,34 +1,22 @@
-# --- 后端 (Python/FastAPI) ---
 backend/__pycache__/
-<<<<<<< HEAD
 backend/venv/
-=======
 backend/.venv/
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
 backend/*.pyc
 backend/.env
 backend/build/
 backend/uploads/
 backend/.env.production
-<<<<<<< HEAD
-=======
 backend/.env.development
->>>>>>> 06f023cec3d1107a77276ffc167723bdc2dcc36e
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-# --- 前端 (Node/React) ---
 frontend/node_modules/
 frontend/dist/
 frontend/.env
 frontend/.env.local
 frontend/npm-debug.log*
-
-# --- 系统与 IDE ---
 .DS_Store
 .vscode/
 .idea/
-README.md
 uploads
-README
