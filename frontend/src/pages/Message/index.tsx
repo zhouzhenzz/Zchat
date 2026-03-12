@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import SideRail from '@/components/layout/SideRail';
 import ContactList from '@/components/chat/ContactList';
 import ChatWindow from '@/components/chat/ChatWindow';

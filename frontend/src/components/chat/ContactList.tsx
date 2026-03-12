@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useChatStore } from '@/store/useChatStore';
 // 必须使用 import type 以符合 verbatimModuleSyntax 规范
 import type { ChatSession } from '@/types/chat';

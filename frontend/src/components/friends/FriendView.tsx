@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useFriendStore } from '@/store/useFriendStore';
 import ContactGrid from './ContactGrid';
 import RequestList from './RequestList';
