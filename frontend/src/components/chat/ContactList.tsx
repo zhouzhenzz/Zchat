@@ -108,9 +108,11 @@ export default function ContactList({ onClose }: ContactListProps) {
                       alt={session.username} 
                     />
                   ) : (
-                    <div className="w-full h-full bg-indigo-50 rounded-full flex items-center justify-center font-bold text-sm text-indigo-500">
-                      {session.username?.charAt(0).toUpperCase() || '?'}
-                    </div>
+                    <img 
+                      src="/default-avatar.png" 
+                      className="rounded-full w-full h-full object-cover shadow-sm group-hover:scale-105 transition-transform duration-300" 
+                      alt={session.username} 
+                    />
                   )}
                   
                   {/* 未读消息红点（黑色极简风） */}

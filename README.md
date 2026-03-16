@@ -58,7 +58,6 @@ Zchat/
 │   │   ├── schemas/      # 数据验证
 │   │   └── main.py       # 应用入口
 │   ├── requirements.txt  # 依赖包
-│   └── DockerFile        # Docker 配置
 ├── frontend/             # 前端代码
 │   ├── src/              # 源代码
 │   │   ├── api/          # API 调用
@@ -68,33 +67,11 @@ Zchat/
 │   │   ├── store/        # 状态管理
 │   │   └── types/        # 类型定义
 │   ├── package.json      # 依赖配置
-│   └── DockerFile        # Docker 配置
-└── docker-compose.yml    # 容器编排
 ```
 
 ## 快速开始
 
-### 方法一：使用 Docker Compose（推荐）
-
-1. 克隆项目
-
-```bash
-git clone https://github.com/zhouzhenzz/Zchat.git
-cd Zchat
-```
-
-2. 启动服务
-
-```bash
-docker-compose up -d
-```
-
-3. 访问应用
-
-- 前端：http://localhost:3000
-- 后端 API：http://localhost:8000
-
-### 方法二：本地开发环境
+### 本地开发环境
 
 #### 后端设置
 
@@ -146,13 +123,6 @@ npm run dev
 
 - 前端：http://localhost:5173
 - 后端 API：http://localhost:8000
-
-## API 文档
-
-后端提供了完整的 RESTful API，可通过以下地址访问交互式 API 文档：
-
-- Swagger UI：http://localhost:8000/docs
-- ReDoc：http://localhost:8000/redoc
 
 
 ## 环境变量

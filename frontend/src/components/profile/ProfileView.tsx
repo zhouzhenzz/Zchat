@@ -109,7 +109,7 @@ export default function ProfileView() {
 
   return (
     <div className="min-h-full w-full bg-[#fafafa] flex items-center justify-center p-6 font-['Inter'] relative md:pt-0 pt-16 md:pb-0 pb-16">
-      <div className="w-full max-w-2xl bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
+      <div className="w-full max-w-2xl bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden max-h-[90vh] overflow-y-auto">
         
         {/* 顶部饰条 */}
         <div className="h-32 bg-gray-50 flex items-end px-12 relative">

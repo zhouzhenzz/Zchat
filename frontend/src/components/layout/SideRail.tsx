@@ -109,9 +109,11 @@ export default function SideRail({ currentMode = 'chat' }: SideRailProps) {
                 className="w-full h-full object-cover" 
               />
             ) : (
-              <span className="text-xs font-bold text-white">
-                {user?.username?.charAt(0).toUpperCase() || '?'}
-              </span>
+              <img 
+                src="/default-avatar.png" 
+                alt="avatar" 
+                className="w-full h-full object-cover" 
+              />
             )}
           </Link>
         </div>

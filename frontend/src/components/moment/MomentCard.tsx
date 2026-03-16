@@ -56,9 +56,11 @@ export default function MomentCard({ moment }: MomentCardProps) {
             className="w-12 h-12 rounded-full object-cover"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold">
-            {moment.username.charAt(0).toUpperCase()}
-          </div>
+          <img 
+            src="/default-avatar.png" 
+            alt={moment.username} 
+            className="w-12 h-12 rounded-full object-cover"
+          />
         )}
       </div>
       <div className="flex-1">

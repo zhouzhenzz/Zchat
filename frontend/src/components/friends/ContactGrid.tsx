@@ -81,9 +81,11 @@ export default function ContactGrid() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-tr from-gray-100 to-gray-200 flex items-center justify-center text-lg font-bold text-gray-400">
-                    {displayName.charAt(0).toUpperCase()}
-                  </div>
+                  <img 
+                    src="/default-avatar.png" 
+                    alt={displayName} 
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </div>
               <div className="md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity">

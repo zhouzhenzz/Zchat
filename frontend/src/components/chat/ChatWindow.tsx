@@ -52,9 +52,7 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
             {activePeer?.avatar_url ? (
               <img src={getFullAvatarUrl(activePeer.avatar_url)!} alt="avatar" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-indigo-500 font-bold text-xs">
-                {activePeer?.username?.charAt(0).toUpperCase()}
-              </div>
+              <img src="/default-avatar.png" alt="avatar" className="w-full h-full object-cover" />
             )}
           </div>
           <div>
@@ -83,9 +81,7 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
                       {activePeer?.avatar_url ? (
                         <img src={getFullAvatarUrl(activePeer.avatar_url)!} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[10px] bg-gray-100 text-gray-400 uppercase font-bold">
-                          {activePeer?.username?.charAt(0)}
-                        </div>
+                        <img src="/default-avatar.png" alt="avatar" className="w-full h-full object-cover" />
                       )}
                    </div>
                 )}

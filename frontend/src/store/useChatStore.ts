@@ -54,7 +54,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   // 增强版：设置当前聊天对象并自动触发数据获取
   setActivePeer: (peerId) => {
-    set({ activePeerId: peerId });
+    set({ activePeerId: peerId, messages: [] });
     if (peerId) {
       // 这里的 get() 可以确保在设置 ID 后立即触发动作
       get().fetchHistory(peerId);

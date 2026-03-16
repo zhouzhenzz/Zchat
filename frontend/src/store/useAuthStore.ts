@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '@/types/user'; // 使用仅类型导入
+import { useChatStore } from './useChatStore';
 
 interface AuthState {
   token: string | null;
@@ -15,7 +16,11 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       setAuth: (token, user) => set({ token, user }),
-      logout: () => set({ token: null, user: null }),
+      logout: () => {
+        set({ token: null, user: null });
+        // 清空聊天数据
+        useChatStore.getState().reset();
+      },
     }),
     { name: 'auth-storage' }
   )
