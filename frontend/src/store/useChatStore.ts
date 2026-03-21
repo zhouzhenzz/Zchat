@@ -2,7 +2,9 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { useAuthStore } from './useAuthStore';
+import { useWebRTCStore } from './useWebRTCStore';
 import type { ChatSession, MessageRecord } from '@/types/chat';
+import type { WebRTCMessage } from '@/types/webrtc';
 
 interface ChatState {
   sessions: ChatSession[];
@@ -15,6 +17,7 @@ interface ChatState {
   setActivePeer: (peerId: number | null) => void;
   initWebSocket: (token: string) => void;
   sendMessage: (receiverId: number, content: string, msgType?: string) => Promise<boolean>;
+  sendWebRTCSignal: (message: WebRTCMessage) => void;
   fetchSessions: () => Promise<void>;
   sendMessageViaHttp: (receiverId: number, content: string, msgType?: string) => Promise<boolean>;
   fetchHistory: (peerId: number) => Promise<void>;
@@ -26,7 +29,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000';
 
 export const useChatStore = create<ChatState>((set, get) => ({
-
 
   reset: () => {
     const socket = get().socket;
@@ -78,18 +80,50 @@ export const useChatStore = create<ChatState>((set, get) => ({
     ws.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data);
-        const msg = payload.data || payload;
-        if (msg.sender_id) {
-          const { activePeerId, messages } = get();
-          // 检查消息是否已经存在
-          const messageExists = messages.some(m => m.id === msg.id);
-          if (!messageExists) {
-            // 如果是当前正在对话的用户，推入消息流
-            if (msg.sender_id === activePeerId || msg.receiver_id === activePeerId) {
-              set({ messages: [...messages, msg] });
+        
+        // 检查是否为 WebRTC 信令消息
+        if (payload.type) {
+          const webrtcMessage = payload as WebRTCMessage;
+          
+          // 处理 WebRTC 信令
+          switch (webrtcMessage.type) {
+            case 'call_request':
+              useWebRTCStore.getState().handleIncomingCall(webrtcMessage);
+              break;
+            case 'offer':
+              useWebRTCStore.getState().handleCallAnswer(webrtcMessage);
+              break;
+            case 'answer':
+              useWebRTCStore.getState().handleCallAnswer(webrtcMessage);
+              break;
+            case 'ice_candidate':
+              useWebRTCStore.getState().handleIceCandidate(webrtcMessage);
+              break;
+            case 'call_accept':
+              useWebRTCStore.getState().handleCallAnswer(webrtcMessage);
+              break;
+            case 'call_reject':
+              useWebRTCStore.getState().endCall();
+              break;
+            case 'call_end':
+              useWebRTCStore.getState().endCall();
+              break;
+          }
+        } else {
+          // 普通聊天消息
+          const msg = payload.data || payload;
+          if (msg.sender_id) {
+            const { activePeerId, messages } = get();
+            // 检查消息是否已经存在
+            const messageExists = messages.some(m => m.id === msg.id);
+            if (!messageExists) {
+              // 如果是当前正在对话的用户，推入消息流
+              if (msg.sender_id === activePeerId || msg.receiver_id === activePeerId) {
+                set({ messages: [...messages, msg] });
+              }
+              // 只要有新消息，就刷新侧边栏（更新最后一条消息内容和未读数）
+              get().fetchSessions().catch(err => console.error('刷新会话失败:', err));
             }
-            // 只要有新消息，就刷新侧边栏（更新最后一条消息内容和未读数）
-            get().fetchSessions().catch(err => console.error('刷新会话失败:', err));
           }
         }
       } catch (e) {
@@ -154,6 +188,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
   
+  sendWebRTCSignal: (message: WebRTCMessage) => {
+    const ws = get().socket;
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(message));
+    }
+  },
+
   // 添加HTTP发送消息的方法作为降级方案
   sendMessageViaHttp: async (receiverId, content, msgType = "text") => {
     try {

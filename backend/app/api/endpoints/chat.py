@@ -57,28 +57,44 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
             data = await websocket.receive_text()
             msg_in = json.loads(data)
             receiver_id = msg_in.get("receiver_id")
-            content = msg_in.get("content")
-            msg_type = msg_in.get("msg_type", "text")
             
-            async with AsyncSessionLocal() as db:
-                is_friend = await check_is_friend(db, user.id, receiver_id)
-                if not is_friend:
-                    await websocket.send_json({"status": "error", "message": "发送失败：对方不是好友"})
-                    continue 
-
-                new_msg = Message(sender_id=user.id, receiver_id=receiver_id, content=content, msg_type=msg_type)
-                db.add(new_msg)
-                await db.commit()
-                await db.refresh(new_msg)
+            # 检查是否为 WebRTC 信令消息
+            webrtc_types = ["offer", "answer", "ice_candidate", "call_request", "call_accept", "call_reject", "call_end"]
+            if msg_in.get("type") in webrtc_types:
+                # WebRTC 信令消息，直接转发
+                async with AsyncSessionLocal() as db:
+                    is_friend = await check_is_friend(db, user.id, receiver_id)
+                    if not is_friend:
+                        await websocket.send_json({"status": "error", "message": "发送失败：对方不是好友"})
+                        continue 
                 
-                payload = {
-                    "id": new_msg.id, "sender_id": user.id, "receiver_id": receiver_id,
-                    "content": content, "msg_type": msg_type, "is_recalled": False,
-                    "is_read": False, "created_at": str(new_msg.created_at)
-                }
+                # 转发信令消息
+                await manager.send_personal_message(msg_in, receiver_id)
+                await websocket.send_json({"status": "delivered"})
+            else:
+                # 普通聊天消息
+                content = msg_in.get("content")
+                msg_type = msg_in.get("msg_type", "text")
+                
+                async with AsyncSessionLocal() as db:
+                    is_friend = await check_is_friend(db, user.id, receiver_id)
+                    if not is_friend:
+                        await websocket.send_json({"status": "error", "message": "发送失败：对方不是好友"})
+                        continue 
 
-            await manager.send_personal_message(payload, receiver_id)
-            await websocket.send_json({"status": "delivered", "data": payload})
+                    new_msg = Message(sender_id=user.id, receiver_id=receiver_id, content=content, msg_type=msg_type)
+                    db.add(new_msg)
+                    await db.commit()
+                    await db.refresh(new_msg)
+                    
+                    payload = {
+                        "id": new_msg.id, "sender_id": user.id, "receiver_id": receiver_id,
+                        "content": content, "msg_type": msg_type, "is_recalled": False,
+                        "is_read": False, "created_at": str(new_msg.created_at)
+                    }
+
+                await manager.send_personal_message(payload, receiver_id)
+                await websocket.send_json({"status": "delivered", "data": payload})
     except WebSocketDisconnect:
         manager.disconnect(user.id)
     except Exception:
@@ -129,7 +145,7 @@ async def get_chat_sessions(
         ))
         .order_by(Message.created_at.desc())
     )
-
+    
     result = await db.execute(query)
     rows = result.all()
 

@@ -1,7 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useChatStore } from '@/store/useChatStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useWebRTCStore } from '@/store/useWebRTCStore';
 import MessageInput from './MessageInput';
+import CallWindow from '@/components/webrtc/CallWindow';
 
 interface ChatWindowProps {
   onMenuClick: () => void;
@@ -10,11 +12,27 @@ interface ChatWindowProps {
 export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
   const { activePeerId, sessions, messages, historyLoading } = useChatStore();
   const { user: currentUser } = useAuthStore();
+  const { 
+    isReceivingCall, 
+    isInCall, 
+    isCalling, 
+    currentCall, 
+    startCall,
+    error,
+    clearError
+  } = useWebRTCStore();
+  
+  const [showCallWindow, setShowCallWindow] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   // 匹配当前聊天对象的信息
   const activePeer = sessions.find(s => s.peer_id === activePeerId);
+
+  // 匹配来电者信息
+  const callerInfo = currentCall 
+    ? sessions.find(s => s.peer_id === currentCall.caller_id)
+    : null;
 
   // 拼接头像地址辅助函数
   const getFullAvatarUrl = (path: string | null | undefined) => {
@@ -28,6 +46,37 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, historyLoading]);
+
+  // 处理通话状态变化
+  useEffect(() => {
+    if (isInCall || isCalling) {
+      setShowCallWindow(true);
+    } else {
+      setShowCallWindow(false);
+    }
+  }, [isInCall, isCalling]);
+
+  // 开始语音通话
+  const handleVoiceCall = async () => {
+    if (activePeerId) {
+      try {
+        await startCall(activePeerId, 'audio');
+      } catch (error) {
+        console.error('Failed to start voice call:', error);
+      }
+    }
+  };
+
+  // 开始视频通话
+  const handleVideoCall = async () => {
+    if (activePeerId) {
+      try {
+        await startCall(activePeerId, 'video');
+      } catch (error) {
+        console.error('Failed to start video call:', error);
+      }
+    }
+  };
 
   if (!activePeerId) {
     return (
@@ -57,10 +106,47 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
           </div>
           <div>
             <h3 className="font-semibold text-sm text-gray-900">{activePeer?.username}</h3>
-            
           </div>
         </div>
+        <div className="flex space-x-3">
+          <button
+            onClick={handleVoiceCall}
+            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+          </button>
+          <button
+            onClick={handleVideoCall}
+            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
       </header>
+
+      {/* Error Notification */}
+      {error && (
+        <div className="px-6 py-3 bg-red-50 border-b border-red-200 flex items-center justify-between">
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.77-.833-2.54 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span className="text-red-700 text-sm">{error}</span>
+          </div>
+          <button
+            onClick={clearError}
+            className="text-red-500 hover:text-red-700"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Message Stream */}
       <div 
@@ -125,6 +211,18 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
       <div className="p-4 bg-white border-t border-gray-50">
         <MessageInput />
       </div>
+
+      {/* Call Window */}
+      {showCallWindow && activePeer && (
+        <CallWindow
+          onClose={() => setShowCallWindow(false)}
+          peerId={activePeer.peer_id}
+          peerName={activePeer.username}
+          peerAvatar={getFullAvatarUrl(activePeer.avatar_url) || ''}
+        />
+      )}
+
+
     </div>
   );
 }

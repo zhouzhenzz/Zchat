@@ -18,7 +18,9 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      // 允许使用媒体设备
+      permissions: ['camera', 'microphone']
     },
     icon: path.join(__dirname, '../public/vite.svg')
   })
