@@ -11,11 +11,20 @@ from app.models.friendship import Friendship
 from app.api.endpoints.user import get_current_user 
 from app.core.security import verify_token
 from app.schemas.chat import ChatSessionOut
+from app.core.cache import (
+    get_friend_check_cache, set_friend_check_cache, invalidate_friend_check_cache,
+    get_chat_sessions_cache, set_chat_sessions_cache, invalidate_chat_sessions_cache,
+    get_chat_history_cache, set_chat_history_cache, invalidate_chat_history_cache,
+)
 
 router = APIRouter()
 
 # --- 辅助函数：校验好友关系 ---
 async def check_is_friend(db: AsyncSession, user_a_id: int, user_b_id: int) -> bool:
+    cached = await get_friend_check_cache(user_a_id, user_b_id)
+    if cached is not None:
+        return cached
+
     query = select(Friendship).where(
         or_(
             and_(Friendship.user_id == user_a_id, Friendship.friend_id == user_b_id, Friendship.status == True),
@@ -23,7 +32,10 @@ async def check_is_friend(db: AsyncSession, user_a_id: int, user_b_id: int) -> b
         )
     )
     result = await db.execute(query)
-    return result.scalars().first() is not None
+    is_friend = result.scalars().first() is not None
+
+    await set_friend_check_cache(user_a_id, user_b_id, is_friend)
+    return is_friend
 
 # --- 1. 连接管理器 ---
 class ConnectionManager:
@@ -95,6 +107,10 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
 
                 await manager.send_personal_message(payload, receiver_id)
                 await websocket.send_json({"status": "delivered", "data": payload})
+
+                await invalidate_chat_sessions_cache(user.id)
+                await invalidate_chat_sessions_cache(receiver_id)
+                await invalidate_chat_history_cache(user.id, receiver_id)
     except WebSocketDisconnect:
         manager.disconnect(user.id)
     except Exception:
@@ -106,6 +122,10 @@ async def get_chat_sessions(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    cached = await get_chat_sessions_cache(current_user.id)
+    if cached is not None:
+        return cached
+
     le_id = case((Message.sender_id < Message.receiver_id, Message.sender_id), else_=Message.receiver_id)
     gr_id = case((Message.sender_id > Message.receiver_id, Message.sender_id), else_=Message.receiver_id)
 
@@ -162,6 +182,7 @@ async def get_chat_sessions(
             "msg_type": m.msg_type,
             "unread_count": unread
         })
+    await set_chat_sessions_cache(current_user.id, sessions)
     return sessions
 
 # --- 4. 标记已读 ---
@@ -181,6 +202,9 @@ async def mark_messages_as_read(
         .values(is_read=True)
     )
     await db.commit()
+
+    await invalidate_chat_sessions_cache(current_user.id)
+
     return {"status": "success"}
 
 # --- 5. 获取历史记录 ---
@@ -191,7 +215,11 @@ async def get_chat_history(
     current_user: User = Depends(get_current_user)
 ):
     is_friend = await check_is_friend(db, current_user.id, target_id)
-    if not is_friend: return [] 
+    if not is_friend: return []
+
+    cached = await get_chat_history_cache(current_user.id, target_id)
+    if cached is not None:
+        return cached
 
     query = (
         select(Message)
@@ -212,6 +240,8 @@ async def get_chat_history(
             "content": display_content, "msg_type": m.msg_type,
             "is_recalled": m.is_recalled, "is_read": m.is_read, "created_at": str(m.created_at)
         })
+
+    await set_chat_history_cache(current_user.id, target_id, history)
     return history
 
 # --- 6. 撤回消息 ---
@@ -233,4 +263,8 @@ async def recall_message(
     
     msg.is_recalled = True
     await db.commit()
+
+    await invalidate_chat_history_cache(current_user.id, msg.receiver_id)
+    await invalidate_chat_sessions_cache(current_user.id)
+    await invalidate_chat_sessions_cache(msg.receiver_id)
     return {"status": "success"}

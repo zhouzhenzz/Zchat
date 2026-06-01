@@ -1,4 +1,5 @@
 import uuid
+import logging
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status #type:ignore
@@ -11,7 +12,10 @@ from app.api.endpoints.user import get_current_user
 from app.models.user import User
 from app.models.moment import Moment
 from app.models.friendship import Friendship
-from app.schemas.moment import MomentResponse 
+from app.schemas.moment import MomentResponse
+from app.core.cache import get_feed_cache, set_feed_cache, invalidate_all_feeds
+
+logger = logging.getLogger("moments") 
 
 # --- Pydantic 模型 ---
 class MomentCreate(BaseModel):
@@ -39,6 +43,10 @@ async def create_moment(
     )
     db.add(new_moment)
     await db.commit()
+
+    deleted = await invalidate_all_feeds()
+    logger.info("feed cache invalidated: %d keys, moment_id=%d", deleted, new_moment.id)
+
     return {"status": "success", "moment_id": new_moment.id}
 
 # --- 2. 删除动态 ---
@@ -55,6 +63,10 @@ async def delete_moment(
     if result.rowcount == 0:
         raise HTTPException(status_code=403, detail="无权删除或动态不存在")
     await db.commit()
+
+    await invalidate_all_feeds()
+    logger.info("feed cache invalidated after delete moment_id=%d", moment_id)
+
     return {"status": "success"}
 
 # --- 3. 获取朋友圈 Feed (核心修复版本) ---
@@ -65,6 +77,10 @@ async def get_moments_feed(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    cached = await get_feed_cache(current_user.id, page, size)
+    if cached is not None:
+        return cached
+
     # 1. 查找所有 status=True 的双向好友关系
     friend_query = select(Friendship).where(
         and_(
@@ -100,7 +116,7 @@ async def get_moments_feed(
     rows = result.all()
 
     # 5. 组装返回数据，avt_url 对应数据库 User.avatar_url
-    return [{
+    data = [{
         "id": m.id,
         "user_id": m.user_id,
         "username": uname,
@@ -111,6 +127,9 @@ async def get_moments_feed(
         "comments": m.comments,
         "created_at": m.created_at
     } for m, uname, avt_url in rows]
+
+    await set_feed_cache(current_user.id, page, size, data)
+    return data
 
 # --- 4. 点赞/取消点赞 ---
 @router.post("/{moment_id}/like")
@@ -144,7 +163,9 @@ async def toggle_like(
         update(Moment).where(Moment.id == moment_id).values(likes=current_likes)
     )
     await db.commit()
-    
+
+    await invalidate_all_feeds()
+
     return {
         "status": "success", 
         "is_liked": is_liked,
@@ -178,4 +199,7 @@ async def add_comment(
         .values(comments=Moment.comments.concat([new_comment]))
     )
     await db.commit()
+
+    await invalidate_all_feeds()
+
     return {"status": "success", "comment": new_comment}

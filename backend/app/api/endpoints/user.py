@@ -10,6 +10,7 @@ from app.models.user import User
 from app.schemas.user import UserCreate, UserOut, Token,UserUpdate
 from app.core.security import get_password_hash, create_access_token, verify_password
 from app.core.config import settings
+from app.core.cache import get_user_cache, set_user_cache, invalidate_user_cache
 from sqlalchemy import select, update, and_, or_ #type:ignore
 
 router = APIRouter()
@@ -26,6 +27,7 @@ async def get_current_user(
 ):
     """
     核心安全依赖：解析 Token 并验证用户身份
+    先查 Redis 缓存，未命中再查数据库
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -33,30 +35,35 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        # 解密 JWT Token
         payload = jwt.decode(
             token, 
             settings.SECRET_KEY, 
             algorithms=[settings.ALGORITHM]
         )
-        
-        # 解决类型检查警告：先获取 sub，再验证其合法性
         user_id_raw = payload.get("sub")
         if user_id_raw is None:
             raise credentials_exception
-        
-        # 确保 user_id 可以被识别为字符串或数字以供数据库查询
-        user_id = str(user_id_raw)
-        
+        user_id = int(str(user_id_raw))
     except JWTError:
         raise credentials_exception
-    
-    # 到数据库中查找对应的用户
-    result = await db.execute(select(User).where(User.id == int(user_id)))
+
+    cached = await get_user_cache(user_id)
+    if cached is not None:
+        user = User(**cached)
+        return user
+
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
-    
+
     if user is None:
         raise credentials_exception
+
+    cache_data = {
+        "id": user.id, "username": user.username, "email": user.email,
+        "avatar_url": user.avatar_url, "bio": user.bio, "location": user.location,
+        "is_active": user.is_active, "created_at": user.created_at.isoformat() if user.created_at else None,
+    }
+    await set_user_cache(user_id, cache_data)
     return user
 
 
@@ -159,7 +166,8 @@ async def update_user_me(
     
     await db.execute(query)
     await db.commit()
-    
-    # 4. 刷新并返回最新对象
+
+    await invalidate_user_cache(current_user.id)
+
     await db.refresh(current_user)
     return current_user
